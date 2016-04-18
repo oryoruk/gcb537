@@ -1,56 +1,34 @@
+#!usr/bin/python
+
+# NAME:  ONUR YORUK
+# CLASS: GCB537 - SPRING 2016
+# EXERCISE 2 PROGRAMMING
 
 # coding: utf-8
 
 ## Ex2
 
 ### Libraries
-
-
-import copy
-import csv
 import pandas as pd
 import numpy as np
-import scipy as scipy
-from scipy.stats import pearsonr
-import math
-import matplotlib.pyplot as plt
-from matplotlib_venn import venn3, venn3_circles, venn2, venn2_circles
-import itertools
-from copy import deepcopy
-from collections import defaultdict
 from datetime import datetime
-from sklearn.cluster import KMeans
-import time
 import pickle
-
-pd.options.display.mpl_style = 'default'
-get_ipython().magic(u'matplotlib inline')
-get_ipython().magic(u'pylab inline')
-
-
-# In[374]:
-
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as pl
 from sklearn import metrics
-from scipy import linalg
 
 
 ### Constants
-
-# In[278]:
-
 #constants:
 PSSM_ROWS   = "ACGT"
+DELTA       = 10**-4
+#these constanst have changed for Ex2:
 INPUT_DIR   = '../Ex2Prog/'
 OUTPUT_DIR  = '../output/'
 
 
 ### Functions for Ex0
-
-# In[4]:
-
 #functions:
 def read_fasta(fasta_file_address):
     seq_dict = {}
@@ -71,7 +49,8 @@ def motif_probs_add_up_to_one(motif):
         pos_total_prob = 0.0
         for nuc in motif:
             pos_total_prob += motif[nuc][i]
-        if (pos_total_prob - 1.0)>DELTA: return False
+        if (pos_total_prob - 1.0) > DELTA:
+            return False
     return True
 
 def fix_zero_probs(motif):
@@ -122,16 +101,10 @@ def seq_motif_log10_probs(seq, motif):
 
 
 ### New Functions for Ex1
-
-# In[5]:
-
 def subseq_motif_prob_log(sub_seq_array,motif_array,motif_len):
     motif_log_array = np.log(motif_array)
     log_prob = np.dot(sub_seq_array,motif_log_array)
     return np.trace(log_prob)
-
-
-# In[6]:
 
 def roc_curve_plot(pair_values, labels=[], title='ROC', out_filename='./roc'):
     """ 
@@ -175,9 +148,6 @@ def roc_curve_plot(pair_values, labels=[], title='ROC', out_filename='./roc'):
     pl.savefig('%s.pdf' % out_filename)
     pl.savefig('%s.png' % out_filename)
 
-
-# In[7]:
-
 '''
 def background_motif():
     bg_motif = {}
@@ -189,9 +159,7 @@ def background_motif():
 def float_to_str(floating_point, precision = 4):
     return (("%." + str(precision)+"f")%floating_point)
 
-
-# In[8]:
-
+"""
 def ZOOPS(seq, motif, gamma = 0.1):
     seq_len = len(seq)
     motif_len = len(motif.itervalues().next())
@@ -251,12 +219,9 @@ def ZOOPS(seq, motif, gamma = 0.1):
 
 
     return pos_reg_prob, max_bind_prob, log_likelihood
-
+"""
 
 ### New Functions for Ex2
-
-# In[9]:
-
 #functions:
 
 #function to read in expression files
@@ -308,156 +273,26 @@ def read_bg_pssm(pssm_file_address):
 #format for sequences file is the same so I will reuse function from older exercises
 
 
-### Variables
-
-# In[10]:
-
+### Variables for Ex2
 pssmlist_file_address = INPUT_DIR + 'pssmlist'
 fasta_file_addresses = []
-
-
-# In[306]:
-
 fasta_file_addresses.append(INPUT_DIR+'sequence.fa')
-
-
-# In[307]:
-
 seq_dict = {}
 for fasta_file_address in fasta_file_addresses:
     seq_dict.update(read_fasta(fasta_file_address))
-
-
-# In[13]:
-
 pssm_list = read_pssmlist(pssmlist_file_address)
-
-
-# In[14]:
-
 bg_motif = read_bg_pssm(INPUT_DIR+'background_pssm.pssm')
-
-
-# In[15]:
-
 exp_list = []
 for i in range(4):
     exp_list.append( read_exp_file(INPUT_DIR+'Expression'+str(i+1)+'.tab') )
 
-
-# In[16]:
-
-len(seq_dict)
-
-
-# In[17]:
-
-len(exp_list[0])
-
-
-## Ex1 Starts Below
-
-# In[24]:
-
-#with open(INPUT_DIR + '../ex1/ex1.labels') as f:
-#    for line in open
-labels = {}
-for line in open(INPUT_DIR + 'ex1.labels'):
-    labels[line.split()[0]] = int(line.split()[1])
-
-
-# In[268]:
-
-#for each motif
-for pssm_file_address in pssm_file_addresses:
-    motif = read_pssm(pssm_file_address)
-    if motif_probs_add_up_to_one(motif):        
-        motif_name = pssm_file_address.strip(INPUT_DIR)[:-5]
-        fo = open(OUTPUT_DIR+ motif_name + ".output", "w")
-        #for each sequence in fasta files
-        output = ''
-        totalLL = 0.0
-        list_of_pos_reg_probs =[]
-        list_of_max_bind_probs =[]
-        list_of_log10_likelihoods = []
-        list_of_true_labels = []
-        #for each sequence
-        for i, seq_name in enumerate(seq_dict):
-            seq = seq_dict[seq_name]
-            pos_reg_prob, max_bind_prob, log_likelihood = ZOOPS(seq, motif)
-            if seq_name in labels:
-                list_of_pos_reg_probs.append(pos_reg_prob)
-                list_of_max_bind_probs.append(max_bind_prob)
-                list_of_log10_likelihoods.append(log_likelihood/np.log(10))
-                list_of_true_labels.append(labels[seq_name])
-            #output:
-            output_line = seq_name + '\t'
-            output_line += float_to_str( pos_reg_prob ) + '\t'
-            output_line += float_to_str( max_bind_prob ) + '\t'
-            output_line += float_to_str(  log_likelihood/np.log(10) ) + '\n'
-            #if i == 0: log_prob_sum = (bg_log_prob +  smpl)
-            #else: log_prob_sum = np.logaddexp(log_prob_sum, bg_log_prob +  smpl)
-            output += output_line
-            if i==0: totalLL = log_likelihood
-            else: totalLL = np.logaddexp(totalLL,log_likelihood)
-        header_lines = "TotalLL: " + float_to_str( totalLL/np.log(10)) + '\n'
-        header_lines += 'NAME\tP(R|S)\tMaxP(B|S)\tLL(S)\n'
-        
-        
-        #ROC CURVES
-        roc_curve_plot([  [list_of_true_labels,list_of_pos_reg_probs]  , [list_of_true_labels,list_of_max_bind_probs], [list_of_true_labels,list_of_log10_likelihoods] ],['pos_reg_probs','max_bind_prob','log10_likelihoods'],motif_name + " (TotalLL:"+str(totalLL/np.log(10))+")",OUTPUT_DIR+motif_name+"_roc_curves")
-        pl.clf()
-        
-        fo.write( header_lines + output )
-        fo.close()
-    else: print('Motif probabilities are not adding up to 1.0')
-
-
 ## Ex2 Starts Below
-
-### Given: Ridge regression function
-
-# In[242]:
-
-def ridge(A, b, alphas):
-    """
-    Return coefficients for regularized least squares
-
-         min ||A x - b||^2 + alpha ||x||^2
-
-    Parameters
-    ----------
-    A : array, shape (n, p)
-    b : array, shape (n,)
-    alphas : array, shape (k,)
-
-    Returns
-    ----------
-    coef: array, shape (p, k)
-    """
-
-    U, s, Vt = linalg.svd(A, full_matrices=False)
-    d = s / (s[:, np.newaxis].T ** 2 + alphas[:, np.newaxis])
-    return np.dot(d * U.T.dot(b), Vt).T
-
-
-# In[ ]:
-
-
-
-
 ### Firstly, new ZOOPS that allows non-uniform background probabilities
-
-# In[5]:
 
 def subseq_motif_prob_log(sub_seq_array,motif_array,motif_len):
     motif_log_array = np.log(motif_array)
-    print motif_log_array
     log_prob = np.dot(sub_seq_array,motif_log_array)
     return np.trace(log_prob)
-
-
-# In[352]:
 
 def motif_to_array(motif, length = 1, background = False):
     motif_array = []
@@ -465,9 +300,6 @@ def motif_to_array(motif, length = 1, background = False):
     for nuc in PSSM_ROWS:
         motif_array.append(motif[nuc]*length)
     return np.array(motif_array)
-
-
-# In[353]:
 
 def seq_to_array(seq):
     seq_array = []
@@ -477,9 +309,6 @@ def seq_to_array(seq):
         seq_array.append(temp_row)
     seq_array = np.array(seq_array)
     return seq_array
-
-
-# In[358]:
 
 def ZOOPS(seq, motif, bg_motif, gamma = 0.1):
     seq_len = len(seq)
@@ -517,26 +346,22 @@ def ZOOPS(seq, motif, bg_motif, gamma = 0.1):
 
 
 ### Then, construct X, load y's
-
-# In[367]:
-
-then =  datetime.datetime.now()
-
-
-# In[368]:
+#let's time this run:
+then =  datetime.now()
 
 #initialize X array and y vectors
-#n = len(seq_dict), p = len(pssm_list)
 n = len(seq_dict)
 p = len(pssm_list)
 exp_no = len(exp_list)
-X = np.zeros((n,p),dtype=np.float)
-y_array = np.zeros((n,exp_no),dtype=np.float)
+X = np.zeros((n, p), dtype=np.float)
+y_array = np.zeros((n, exp_no), dtype=np.float)
 
 
 #for each sequence, scan the sequence for each pssm, store probability in a matrix
 #for each sequence
+print "starting scanning sequences with given motifs to construct X"
 for i, seq_id in enumerate(seq_dict):
+    if i>1: break
     seq = seq_dict[seq_id]
     motif_probs = []
     #scan the sequence for each pssm    
@@ -546,165 +371,19 @@ for i, seq_id in enumerate(seq_dict):
     for j, exp in enumerate(exp_list):
         y_array[i,j] = exp[seq_id]      
 
+now  =  datetime.now()
+print round((now-then).total_seconds(), 2), "seconds passed"
 
-# In[369]:
+y_array_filename = OUTPUT_DIR + 'experiments.pickle'
+fileObject = open(y_array_filename, 'wb')
+pickle.dump(y_array,fileObject)
+fileObject.close()
 
-now  =  datetime.datetime.now()
-print round((now-then).total_seconds(),2), "seconds passed"
-
-
-# In[437]:
-
-X
-
-
-# In[392]:
-
-X_filename = '/Users/oryoruk/probs_of_being_regulated.pickle'
+X_filename = OUTPUT_DIR + 'probs_of_being_regulated.pickle'
 fileObject = open(X_filename, 'wb')
-pickle.dump(X,fileObject)
+pickle.dump(X, fileObject)
 fileObject.close()
 
-
-# In[391]:
-
-X_uniform_bg_filename = '/Users/oryoruk/probs_of_being_regulated_uniform_bg.pickle'
-fileObject = open(X_uniform_bg_filename, 'wb')
-pickle.dump(X_uni_bg,fileObject)
-fileObject.close()
-
-
-# In[393]:
-
-fileObject = open(X_filename,'r')
-temp = pickle.load(fileObject)
-
-
-# In[396]:
-
-del X_uni_bg
-
-
-# In[372]:
-
-X.shape
-
-
-### Ridge Regression
-
-# In[571]:
-
-#function for residual sum of squares
-def rss(y, y_hat):
-    return np.power(y-y_hat,2).sum()
-
-
-# In[708]:
-
-lambdas = np.arange(0.0,1000.0,1)
-
-
-# In[588]:
-
-lambdas = np.arange(1.0,1.05,0.1)
-
-
-# In[634]:
-
-lambdas[0]=0.0
-
-
-# In[709]:
-
-lambdas
-
-
-# In[710]:
-
-k = len(lambdas)
-
-
-# In[711]:
-
-k
-
-
-# In[638]:
-
-#starting off with a single experiment
-
-
-                #for each gene expression experiment
-for i, exp in enumerate(exp_list):
-    y = y_array[:,i]
-    
-    #pick lambda
-    #run ridge regression
-    temp = ridge(X,y,lambdas)
-                
-# In[720]:
-
-y = y_array[:,1]
-
-
-# In[721]:
-
-coefs_array = ridge(X,y,lambdas)
-
-
-# In[722]:
-
-for i in range(k):
-    bias_term = (y - np.dot(X, coefs_array[:,i])).mean()
-    y_hat = np.dot(X, coefs_array[:,i])+bias_term
-    print bias_term, rss(y, y_hat)
-
-
-# In[723]:
-
-y_hat
-
-
-# In[724]:
-
-y
-
-
-# In[669]:
-
-
-
-
-# In[715]:
-
-from sklearn import linear_model
-#clf = linear_model.RidgeCV(alphas=lambdas)
-clf = linear_model.Ridge (alpha =1000.0)
-
-clf.fit (X,y) 
-
-
-# In[716]:
-
-y
-
-
-# In[717]:
-
-clf.alpha_
-
-
-# In[718]:
-
-clf.predict(X)
-
-
-# In[719]:
-
-rss(y,clf.predict(X))
-
-
-# In[ ]:
-
+print 'pickles saved'
 
 
