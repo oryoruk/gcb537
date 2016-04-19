@@ -21,8 +21,8 @@ def CV_fold_indices(total_no, CV_fold_no):
     fold_size = total_no/int(CV_fold_no)
     indices = []
     starts = range(0,total_no,fold_size)[:CV_fold_no]
-    ends = range(0,total_no,fold_size)[1:CV_fold_no] + [total_no]
-    return zip(starts,ends)
+    ends = range(0, total_no,fold_size)[1:CV_fold_no] + [total_no]
+    return zip(starts, ends)
 
 # provided ridge regression function
 def ridge(A, b, alphas):
@@ -60,9 +60,55 @@ print y_array
 print 'variables loaded'
 
 
-n,p = X.shape
+n, p = X.shape
 _, exp_no = y_array.shape
-k = 1000
+lambdas = np.arange(0.0,1,0.1)
+#code to train with cross validation
+k = len(lambdas)
+cv_fold_no = 10
+#for each experiment
+for i, exp in enumerate(exp_list):
+    #get the y vector that corresponds to the experiment
+    y = y_array[:,i]
+    rss_per_lambda = np.zeros(k,)
+    y_hat_per_lambda = np.zeros((n,k))
+    #for each fold
+    for fold_start,fold_end in CV_fold_indices(n, cv_fold_no):
+        fold_train_X = np.concatenate( [X[:fold_start,:],X[fold_end:,:]])
+        fold_test_X = X[fold_start:fold_end,:]
+        fold_train_y = np.concatenate([y[:fold_start],y[fold_end:]])
+        fold_test_y = y[fold_start:fold_end]
+        #run ridge regression on the cv training set (fold left out)
+        coefs_array = ridge(fold_train_X,fold_train_y,lambdas)
+        #for each lambda
+        for j in range(k):
+            bias_term = (fold_train_y - np.dot(fold_train_X, coefs_array[:,j])).mean()
+            fold_test_y_hat = np.dot(fold_test_X, coefs_array[:,j])+bias_term
+            #print bias_term, rss(fold_test_y, fold_test_y_hat)
+            rss_per_lambda[j] += rss(fold_test_y, fold_test_y_hat)
+            y_hat_per_lambda[fold_start:fold_end,j] = fold_test_y_hat
+
+
+"""
+#code to train on the whole data
+
+k = len(lambdas)
+#for each experiment
+for i, exp in enumerate(exp_list):
+    #get the y vector that corresponds to the experiment
+    y = y_array[:,i]
+    rss_per_lambda = np.zeros(k,)
+    #run ridge regression on the cv training set (fold left out)
+    coefs_array = ridge(X,y,lambdas)
+    #for each lambda
+    for j in range(k):
+        bias_term = (y - np.dot(X, coefs_array[:,j])).mean()
+        y_hat = np.dot(X, coefs_array[:,j])+bias_term
+        #print bias_term, rss(fold_test_y, fold_test_y_hat)
+        rss_per_lambda[j] += rss(y, y_hat)
+"""
+
+
 
 """
 '#InputFile: Expression'+str(i+1)+'.tab'
