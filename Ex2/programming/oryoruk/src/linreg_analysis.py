@@ -7,6 +7,8 @@
 import pickle
 import numpy as np
 from scipy import linalg
+import matplotlib.pyplot as plt
+
 
 INPUT_DIR = '../Ex2Prog/'
 OUTPUT_DIR = '../output/'
@@ -62,17 +64,20 @@ print 'variables loaded'
 
 n, p = X.shape
 _, exp_no = y_array.shape
-lambdas = np.arange(0.0,1,0.1)
 #code to train with cross validation
-k = len(lambdas)
+#set lambdas
+k = 200
+lambdas = np.logspace(-10,2,k)
 cv_fold_no = 10
+
 #for each experiment
 for i, exp in enumerate(exp_list):
     #get the y vector that corresponds to the experiment
     y = y_array[:,i]
-    rss_per_lambda = np.zeros(k,)
+    test_rss_per_lambda = np.zeros(k,)
     y_hat_per_lambda = np.zeros((n,k))
     #for each fold
+    #code to train with cross validation:
     for fold_start,fold_end in CV_fold_indices(n, cv_fold_no):
         fold_train_X = np.concatenate( [X[:fold_start,:],X[fold_end:,:]])
         fold_test_X = X[fold_start:fold_end,:]
@@ -85,37 +90,35 @@ for i, exp in enumerate(exp_list):
             bias_term = (fold_train_y - np.dot(fold_train_X, coefs_array[:,j])).mean()
             fold_test_y_hat = np.dot(fold_test_X, coefs_array[:,j])+bias_term
             #print bias_term, rss(fold_test_y, fold_test_y_hat)
-            rss_per_lambda[j] += rss(fold_test_y, fold_test_y_hat)
+            test_rss_per_lambda[j] += rss(fold_test_y, fold_test_y_hat)
             y_hat_per_lambda[fold_start:fold_end,j] = fold_test_y_hat
-
-
-"""
-#code to train on the whole data
-
-k = len(lambdas)
-#for each experiment
-for i, exp in enumerate(exp_list):
-    #get the y vector that corresponds to the experiment
-    y = y_array[:,i]
-    rss_per_lambda = np.zeros(k,)
+    #pick best lambda based on rss
+    best_lambda_index = argmin(test_rss_per_lambda)
+    best_lambda = lambdas[best_lambda_index]
+    print best_lambda
+    best_rss, best_biasterm, best_coeffs = 0.0,0.0, []
+    #associated rss
+    #min(rss_per_lambda)
+    #now train using whole data:
+    training_rss_per_lambda = np.zeros(k,)
     #run ridge regression on the cv training set (fold left out)
+    #running ridge for the entire dataset
     coefs_array = ridge(X,y,lambdas)
     #for each lambda
     for j in range(k):
         bias_term = (y - np.dot(X, coefs_array[:,j])).mean()
         y_hat = np.dot(X, coefs_array[:,j])+bias_term
         #print bias_term, rss(fold_test_y, fold_test_y_hat)
-        rss_per_lambda[j] += rss(y, y_hat)
-"""
+        training_rss_per_lambda[j] += rss(y, y_hat)
+        if j == best_lambda_index:
+            best_biasterm = bias_term
+            best_rss = rss(y, y_hat)
+            best_coeffs = coefs_array[:,j]
+    #save output file:
+    save_output('Expression'+str(i+1)+'.tab', best_lambda, best_rss, best_biasterm, best_coeffs)
+    #here comes visualization:
+    #code to visualize the relationship between lambda and accuracy (RSS) in test and whole data
 
-
-
-"""
-'#InputFile: Expression'+str(i+1)+'.tab'
-#Lambda
-#RSS
-#W0
-#W
-"""
-
+    #TODO: visualize training vs all data rss's / lambda
+    #TODO: visualize all data complexity / lambda
 
