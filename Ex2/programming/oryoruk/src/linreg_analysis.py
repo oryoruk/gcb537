@@ -16,6 +16,13 @@ OUTPUT_DIR = '../output/'
 def rss(y, y_hat):
     return np.power(y - y_hat, 2).sum()
 
+#function that returns indices for cross validation
+def CV_fold_indices(total_no, CV_fold_no):
+    fold_size = total_no/int(CV_fold_no)
+    indices = []
+    starts = range(0,total_no,fold_size)[:CV_fold_no]
+    ends = range(0,total_no,fold_size)[1:CV_fold_no] + [total_no]
+    return zip(starts,ends)
 
 # provided ridge regression function
 def ridge(A, b, alphas):
@@ -51,3 +58,18 @@ y_array = pickle.load(fileObject)
 
 print y_array
 print 'variables loaded'
+
+
+n,p = X.shape
+_, exp_no = y_array.shape
+k = 1000
+
+"""
+'#InputFile: Expression'+str(i+1)+'.tab'
+#Lambda
+#RSS
+#W0
+#W
+"""
+
+
