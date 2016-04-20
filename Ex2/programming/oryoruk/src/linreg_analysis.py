@@ -9,6 +9,9 @@ import numpy as np
 from scipy import linalg
 import matplotlib.pyplot as plt
 import matplotlib
+import pandas as pd
+pd.options.display.mpl_style = 'default'
+
 
 
 INPUT_DIR = '../Ex2Prog/'
@@ -50,7 +53,7 @@ def ridge(A, b, alphas):
     return np.dot(d * U.T.dot(b), Vt).T
 
 def save_output(file_name, best_lambda, rss, bias_term, coeffs):
-    fo = open(OUTPUT_DIR+ file_name +'_resuts' + ".output", "w")
+    fo = open(OUTPUT_DIR+ file_name+'_results' + ".output", "w")
     output = '#InputFile: ' + file_name + '\n'
     output += "#Lambda " + str(best_lambda)  + '\n'
     output += "#RSS " + str(rss) + '\n'
@@ -83,6 +86,7 @@ cv_fold_no = 10
 
 #for each experiment
 for i in range(exp_no):
+    exp_dataset = 'Expression'+str(i+1)
     #get the y vector that corresponds to the experiment
     y = y_array[:,i]
     test_rss_per_lambda = np.zeros(k,)
@@ -126,8 +130,8 @@ for i in range(exp_no):
             best_rss = rss(y, y_hat)
             best_coeffs = coefs_array[:,j]
     #save output file:
-    save_output('Expression'+str(i+1)+'.tab', best_lambda, best_rss, best_biasterm, best_coeffs)
-    """
+    save_output(exp_dataset, best_lambda, best_rss, best_biasterm, best_coeffs)
+
     #here comes visualization:
     # here comes visualization:
     ##########
@@ -144,11 +148,12 @@ for i in range(exp_no):
     ax.plot(lambdas, train_rss_per_lambda, label='training_data')
     ymin, ymax = ax.get_ylim()
     ax.vlines(best_lambda, ymin=ymin, ymax=ymax, alpha=1, color='r', label='best_lambda: ' + str(best_lambda))
-    ax.set_title('Accuracy vs. Regularization/Shrinkage')
+    ax.set_title('Accuracy vs. Regularization/Shrinkage (' + exp_dataset + ')')
     plt.xlabel('lambdas')
-    plt.ylabel('weights')
+    plt.ylabel('accuracy (rss)')
     plt.legend()
-    plt.show()
+    #plt.show()
+    plt.savefig(OUTPUT_DIR +  exp_dataset + '_plot1_acc_reg.png', bbox_inches='tight', dpi=300)
 
     # TODO: visualize all data complexity / lambda (shrinkage of coefficients)
     plt.figure(figsize=(30, 10))
@@ -161,11 +166,12 @@ for i in range(exp_no):
     ymin, ymax = ax.get_ylim()
     ax.vlines(best_lambda, ymin=ymin, ymax=ymax, alpha=1, color='r', label='best_lambda: ' + str(best_lambda))
     ax.plot(lambdas, coefs_array.T)
-    ax.set_title('Accuracy vs. Regularization/Shrinkage')
+    ax.set_title('Complexity vs. Regularization/Shrinkage (Zoomed In ,' + exp_dataset + ')')
     plt.xlabel('lambdas')
-    plt.ylabel('weights')
+    plt.ylabel('coefficients')
     plt.legend()
-    plt.show()
+    #plt.show()
+    plt.savefig(OUTPUT_DIR +  exp_dataset + '_plot2_comp_reg_I.png', bbox_inches='tight', dpi=300)
 
     plt.figure(figsize=(30, 10))
     ax = plt.gca()
@@ -177,15 +183,15 @@ for i in range(exp_no):
     ymin, ymax = ax.get_ylim()
     ax.vlines(best_lambda, ymin=ymin, ymax=ymax, alpha=1, color='r', label='best_lambda: ' + str(best_lambda))
     ax.plot(lambdas, coefs_array.T)
-    ax.set_title('Accuracy vs. Regularization/Shrinkage')
+    ax.set_title('Complexity vs. Regularization/Shrinkage (Zoomed Out ,' + exp_dataset + ')')
     plt.xlabel('lambdas')
-    plt.ylabel('weights')
+    plt.ylabel('coefficients')
     plt.legend()
-    plt.show()
-
+    #plt.show()
+    plt.savefig(OUTPUT_DIR +  exp_dataset + '_plot3_comp_reg_II.png', bbox_inches='tight', dpi=300)
 
     ##########
-    """
+
 
 print 'finished running'
 
