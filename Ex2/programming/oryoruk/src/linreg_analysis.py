@@ -154,7 +154,7 @@ for i in range(exp_no):
     ax.vlines(best_lambda, ymin=ymin, ymax=ymax, alpha=1, color='r', label='best_lambda: ' + str(best_lambda))
     ax.set_title('Accuracy vs. Regularization/Shrinkage (' + exp_dataset + ')')
     plt.xlabel('lambdas')
-    plt.ylabel('accuracy (rss)')
+    plt.ylabel('inverse accuracy (rss)')
     plt.legend()
     #plt.show()
     plt.savefig(OUTPUT_DIR +  exp_dataset + '_plot1_acc_reg.png', bbox_inches='tight', dpi=300)
