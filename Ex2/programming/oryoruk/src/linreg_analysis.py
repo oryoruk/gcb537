@@ -73,7 +73,7 @@ X = pickle.load(fileObject)
 fileObject = open(y_array_filename, 'r')
 y_array = pickle.load(fileObject)
 
-print 'variables loaded'
+print 'variables from previous script loaded'
 
 
 n, p = X.shape
@@ -87,6 +87,8 @@ cv_fold_no = 10
 #for each experiment
 for i in range(exp_no):
     exp_dataset = 'Expression'+str(i+1)
+    print '\nstarting the analysis for dataset: ' + exp_dataset
+
     #get the y vector that corresponds to the experiment
     y = y_array[:,i]
     test_rss_per_lambda = np.zeros(k,)
@@ -110,7 +112,8 @@ for i in range(exp_no):
     #pick best lambda based on rss
     best_lambda_index = np.argmin(test_rss_per_lambda)
     best_lambda = lambdas[best_lambda_index]
-    #print best_lambda
+    print 'cross validation complete for dataset: ' + exp_dataset
+    print 'ridge hyper parameter yielding best rss is: ' + str(best_lambda)
     best_rss, best_biasterm, best_coeffs = 0.0,0.0, []
     #associated rss
     #min(rss_per_lambda)
@@ -130,8 +133,9 @@ for i in range(exp_no):
             best_rss = rss(y, y_hat)
             best_coeffs = coefs_array[:,j]
     #save output file:
+    print 'final training with whole dataset complete for dataset: ' + exp_dataset
     save_output(exp_dataset, best_lambda, best_rss, best_biasterm, best_coeffs)
-
+    print 'output saved'
     #here comes visualization:
     # here comes visualization:
     ##########
@@ -189,9 +193,9 @@ for i in range(exp_no):
     plt.legend()
     #plt.show()
     plt.savefig(OUTPUT_DIR +  exp_dataset + '_plot3_comp_reg_II.png', bbox_inches='tight', dpi=300)
-
+    print 'visualizations saved'
     ##########
 
 
-print 'finished running'
+print '\nanalysis complete'
 
