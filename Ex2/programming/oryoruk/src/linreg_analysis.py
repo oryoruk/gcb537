@@ -12,7 +12,7 @@ import matplotlib
 import pandas as pd
 pd.options.display.mpl_style = 'default'
 
-
+print "ONUR IS REALLLLLLLYYYYYYYYY STUPID!!!!!!!!"
 
 INPUT_DIR = '../Ex2Prog/'
 OUTPUT_DIR = '../output/'
