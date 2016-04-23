@@ -194,6 +194,21 @@ for i in range(exp_no):
     #plt.show()
     plt.savefig(OUTPUT_DIR +  exp_dataset + '_plot3_comp_reg_II.png', bbox_inches='tight', dpi=300)
     print 'visualizations saved'
+
+    plt.figure(figsize=(30, 10))
+
+    # add a 'best fit' line
+    # plt.plot(best_coefs_array[:,1],bins, 'r--', linewidth=1)
+
+
+    plt.xlabel('Magnitude')
+    plt.ylabel('#')
+    plt.title('Histogram of Coefficients')
+    plt.grid(True)
+    plt.hist(best_coeffs, bins=100, facecolor='green', alpha=0.75)
+    plt.savefig(OUTPUT_DIR + exp_dataset + '_plot4_coef_hist.png', bbox_inches='tight', dpi=300)
+
+    #plt.show()
     ##########
 
 
